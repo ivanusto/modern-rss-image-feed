@@ -2,7 +2,7 @@
 /*
 Plugin Name: Modern RSS Image Feed
 Description: Add modern image formats (WebP, AVIF) support to RSS feeds with fallbacks
-Version: 1.1.0
+Version: 1.2.0
 Author: Ivan Lin
 License: Apache-2.0
 */
@@ -33,8 +33,10 @@ function modern_rss_add_image_meta() {
 
     [$url, $width, $height] = $image_full;
 
+    echo "<media:group>\n";
+
     printf(
-        "<media:content url='%s' type='%s' width='%s' height='%s' medium='image'>\n",
+        "\t<media:content url='%s' type='%s' width='%s' height='%s' medium='image'>\n",
         esc_url($url),
         esc_attr(get_post_mime_type($thumbnail_id)),
         esc_attr($width),
@@ -43,23 +45,21 @@ function modern_rss_add_image_meta() {
 
     $alt_text = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
     if ($alt_text) {
-        printf("<media:title type='plain'>%s</media:title>\n", esc_html($alt_text));
+        printf("\t\t<media:title type='plain'>%s</media:title>\n", esc_html($alt_text));
     }
 
     $attachment = get_post($thumbnail_id);
     if ($attachment && !empty($attachment->post_content)) {
-        printf("<media:description type='plain'>%s</media:description>\n", esc_html($attachment->post_content));
+        printf("\t\t<media:description type='plain'>%s</media:description>\n", esc_html($attachment->post_content));
     }
 
-    echo "</media:content>\n\n";
-
-    printf("<itunes:image href='%s' />\n\n", esc_url($url));
+    echo "\t</media:content>\n";
 
     foreach (['webp', 'avif'] as $format) {
         $modern_url = modern_rss_get_modern_image_url($url, $format);
         if ($modern_url) {
             printf(
-                "<media:content url='%s' type='image/%s' width='%s' height='%s' medium='image' />\n\n",
+                "\t<media:content url='%s' type='image/%s' width='%s' height='%s' medium='image' />\n",
                 esc_url($modern_url),
                 $format,
                 esc_attr($width),
@@ -67,16 +67,40 @@ function modern_rss_add_image_meta() {
             );
         }
     }
+
+    echo "</media:group>\n\n";
+
+    printf("<itunes:image href='%s' />\n\n", esc_url($url));
 }
 
 function modern_rss_get_modern_image_url($original_url, $format) {
     $upload_dir = wp_upload_dir();
-    $file_path  = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $original_url);
+    if (empty($upload_dir['basedir']) || empty($upload_dir['baseurl'])) {
+        return false;
+    }
+
+    // Normalize protocols (http/https) to avoid mismatch lookup issues
+    $baseurl_normalized = preg_replace('/^https?:/', '', $upload_dir['baseurl']);
+    $url_normalized     = preg_replace('/^https?:/', '', $original_url);
+
+    // Normalize directory separators for local filesystem lookup
+    $basedir_normalized = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $upload_dir['basedir']);
+    
+    // Replace URL base path with local absolute directory path
+    $file_path = str_replace($baseurl_normalized, $basedir_normalized, $url_normalized);
+    $file_path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $file_path);
+
+    // Replace extension
     $modern_path = preg_replace('/\.(jpg|jpeg|png)$/i', ".$format", $file_path);
 
     if ($modern_path === $file_path || !file_exists($modern_path)) {
         return false;
     }
 
-    return str_replace($upload_dir['basedir'], $upload_dir['baseurl'], $modern_path);
+    // Map local path back to base URL
+    $relative_path = str_replace($basedir_normalized, '', $modern_path);
+    $relative_path = str_replace('\\', '/', $relative_path); // ensure URL format uses forward slashes
+    
+    return rtrim($upload_dir['baseurl'], '/') . '/' . ltrim($relative_path, '/');
 }
+
