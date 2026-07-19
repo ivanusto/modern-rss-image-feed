@@ -21,6 +21,8 @@ Key Features:
 * Proper image sizing information
 * Clean and lightweight implementation
 
+This plugin is one of the origin projects of Omni Webmaster & SEO Suite, an all-in-one webmaster toolkit by the same author that consolidates and optimizes these standalone plugins: https://github.com/ivanusto/omni-webmaster-seo-suite
+
 == Installation ==
 1. Upload the plugin files to the `/wp-content/plugins/modern-rss-image-feed` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
