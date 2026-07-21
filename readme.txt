@@ -3,7 +3,7 @@ Contributors: ivanlin
 Tags: rss, feed, webp, avif, images
 Requires at least: 5.0
 Tested up to: 6.7.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 Requires PHP: 7.0
 License: Apache-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
@@ -39,6 +39,11 @@ Yes, it seamlessly integrates with existing WordPress RSS feeds.
 Yes, it includes iTunes image tag support for podcast feeds.
 
 == Changelog ==
+= 1.2.1 =
+* Fix: only wrap images in media:group when multiple formats exist — the unconditional wrapper (introduced in 1.2.0) hid the featured image from feed consumers that read media:content as a direct child of item.
+* Added media:thumbnail tag for broader compatibility with feed aggregators.
+* Fix: derive the media:content mime type from the actual file URL instead of the attachment record, which can be stale after WebP/AVIF conversion.
+
 = 1.2.0 =
 * Code optimization: wrapped RSS image formats in media:group tags to prevent duplicate display in feed readers.
 * Robust URL resolution: normalized HTTP/HTTPS protocols and cross-platform directory separators.
