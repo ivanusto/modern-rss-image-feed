@@ -2,7 +2,7 @@
 /*
 Plugin Name: Modern RSS Image Feed
 Description: Add modern image formats (WebP, AVIF) support to RSS feeds with fallbacks
-Version: 1.2.0
+Version: 1.2.1
 Author: Ivan Lin
 License: Apache-2.0
 */
@@ -33,42 +33,72 @@ function modern_rss_add_image_meta() {
 
     [$url, $width, $height] = $image_full;
 
-    echo "<media:group>\n";
+    // Prefer the mime type derived from the actual file URL; the attachment
+    // record may still say image/jpeg after an on-disk conversion to WebP/AVIF.
+    $filetype  = wp_check_filetype($url);
+    $mime_type = !empty($filetype['type']) ? $filetype['type'] : get_post_mime_type($thumbnail_id);
+
+    $alternates = [];
+    foreach (['webp', 'avif'] as $format) {
+        $modern_url = modern_rss_get_modern_image_url($url, $format);
+        if ($modern_url) {
+            $alternates[$format] = $modern_url;
+        }
+    }
+
+    // Only wrap in media:group when alternate formats exist. A group is what
+    // prevents duplicate display of multiple formats, but it also hides the
+    // image from consumers that only read direct children of <item>.
+    $use_group = !empty($alternates);
+    $indent    = $use_group ? "\t" : '';
+
+    if ($use_group) {
+        echo "<media:group>\n";
+    }
 
     printf(
-        "\t<media:content url='%s' type='%s' width='%s' height='%s' medium='image'>\n",
+        "%s<media:content url='%s' type='%s' width='%s' height='%s' medium='image'>\n",
+        $indent,
         esc_url($url),
-        esc_attr(get_post_mime_type($thumbnail_id)),
+        esc_attr($mime_type),
         esc_attr($width),
         esc_attr($height)
     );
 
     $alt_text = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
     if ($alt_text) {
-        printf("\t\t<media:title type='plain'>%s</media:title>\n", esc_html($alt_text));
+        printf("%s\t<media:title type='plain'>%s</media:title>\n", $indent, esc_html($alt_text));
     }
 
     $attachment = get_post($thumbnail_id);
     if ($attachment && !empty($attachment->post_content)) {
-        printf("\t\t<media:description type='plain'>%s</media:description>\n", esc_html($attachment->post_content));
+        printf("%s\t<media:description type='plain'>%s</media:description>\n", $indent, esc_html($attachment->post_content));
     }
 
-    echo "\t</media:content>\n";
+    printf("%s</media:content>\n", $indent);
 
-    foreach (['webp', 'avif'] as $format) {
-        $modern_url = modern_rss_get_modern_image_url($url, $format);
-        if ($modern_url) {
-            printf(
-                "\t<media:content url='%s' type='image/%s' width='%s' height='%s' medium='image' />\n",
-                esc_url($modern_url),
-                $format,
-                esc_attr($width),
-                esc_attr($height)
-            );
-        }
+    foreach ($alternates as $format => $modern_url) {
+        printf(
+            "%s<media:content url='%s' type='image/%s' width='%s' height='%s' medium='image' />\n",
+            $indent,
+            esc_url($modern_url),
+            $format,
+            esc_attr($width),
+            esc_attr($height)
+        );
     }
 
-    echo "</media:group>\n\n";
+    if ($use_group) {
+        echo "</media:group>\n";
+    }
+    echo "\n";
+
+    printf(
+        "<media:thumbnail url='%s' width='%s' height='%s' />\n\n",
+        esc_url($url),
+        esc_attr($width),
+        esc_attr($height)
+    );
 
     printf("<itunes:image href='%s' />\n\n", esc_url($url));
 }
