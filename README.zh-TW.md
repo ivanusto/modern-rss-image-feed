@@ -4,7 +4,7 @@
 
 透過 Media RSS (`<media:content>`) 標籤為 WordPress RSS 訂閱源提供現代圖片格式（WebP、AVIF）支援，並自動包裝於標準的 `<media:group>` 標籤中，以確保相容性並防止 RSS 閱讀器顯示重複的圖片。
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue) ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-21759b) ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4) ![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![Version](https://img.shields.io/badge/version-1.2.1-blue) ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-21759b) ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4) ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
 ---
 

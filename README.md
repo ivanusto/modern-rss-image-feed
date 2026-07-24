@@ -4,7 +4,7 @@
 
 Add modern image formats (WebP, AVIF) support to WordPress RSS feeds using Media RSS (`<media:content>`) tags, automatically wrapped in standard `<media:group>` tags to ensure compatibility and prevent duplicate image display in feed readers.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue) ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-21759b) ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4) ![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![Version](https://img.shields.io/badge/version-1.2.1-blue) ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-21759b) ![PHP](https://img.shields.io/badge/PHP-7.0%2B-777bb4) ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
 ---
 
