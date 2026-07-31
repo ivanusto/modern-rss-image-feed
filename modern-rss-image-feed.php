@@ -4,7 +4,8 @@ Plugin Name: Modern RSS Image Feed
 Description: Add modern image formats (WebP, AVIF) support to RSS feeds with fallbacks
 Version: 1.2.1
 Author: Ivan Lin
-License: Apache-2.0
+License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 defined('ABSPATH') || exit;
